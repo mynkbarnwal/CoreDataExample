@@ -64,6 +64,39 @@ extension ListViewController:UITableViewDelegate,UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "OpenRegisterView", sender: userArray[indexPath.row])
+        if let user = dbManager.getUser(email: userArray[indexPath.row].emailid ?? ""),
+           user.count > 0{
+            performSegue(withIdentifier: "OpenRegisterView", sender: user[0])
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if (editingStyle == .delete) {
+            
+            let alert = UIAlertController(title: "Alert!!!", message: "Are you sure??", preferredStyle: .alert)
+            
+            let yesAction = UIAlertAction(title: "Yes", style: .destructive) {[weak self] action in
+                guard let self else{
+                    return
+                }
+                dbManager.deleteUser(user: userArray[indexPath.row])
+                
+                userArray = dbManager.getUsers()
+            }
+            
+            alert.addAction(yesAction)
+            
+            let noAction = UIAlertAction(title: "No", style: .default) { action in
+                
+            }
+            alert.addAction(noAction)
+                    
+            present(alert, animated: true)
+
+        }
     }
 }
